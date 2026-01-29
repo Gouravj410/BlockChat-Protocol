@@ -51,8 +51,8 @@ async function handleLogin() {
     console.log('🔐 [LOGIN] UI ready');
 
     try {
-        console.log('🔐 [LOGIN] Sending request to http://localhost:5000/api/login...');
-        const resp = await fetch('http://localhost:5000/api/login', {
+        console.log('🔐 [LOGIN] Sending request to http://localhost:3000/api/login...');
+        const resp = await fetch('http://localhost:3000/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -163,7 +163,7 @@ async function handleRegister() {
     document.getElementById('login-flow').classList.remove('active');
 
     try {
-        const resp = await fetch('http://localhost:5000/api/register', {
+        const resp = await fetch('http://localhost:3000/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, email, password, confirm: password })
@@ -195,7 +195,20 @@ async function handleRegister() {
         }
 
         if (data.success) {
-            showMessageRegister('✓ Account created! You can now login.', 'success');
+            // Prefill login email and clear password
+            const loginEmailEl = document.getElementById('login-email');
+            const loginPasswordEl = document.getElementById('login-password');
+            if (loginEmailEl) loginEmailEl.value = email;
+            if (loginPasswordEl) loginPasswordEl.value = '';
+
+            // Immediately switch to login page after registration flow completes
+            clearFlowResults('login');
+            clearMessage();
+            showPage('login-page');
+            document.getElementById('login-flow').classList.add('active');
+            document.getElementById('register-flow').classList.remove('active');
+            // Focus password so user can type credentials quickly
+            if (loginPasswordEl) loginPasswordEl.focus();
         } else {
             showMessageRegister('✗ ' + (data.message || 'Registration failed'), 'error');
         }
@@ -239,6 +252,13 @@ function showMessageLogin(text, type) {
     box.classList.remove('hidden', 'success', 'error');
     txt.textContent = text;
     box.classList.add(type);
+    // Auto-hide after 3-4 seconds
+    clearTimeout(box.__hideTimer);
+    if (type === 'error') {
+        box.__hideTimer = setTimeout(() => box.classList.add('hidden'), 4000);
+    } else {
+        box.__hideTimer = setTimeout(() => box.classList.add('hidden'), 3000);
+    }
 }
 
 function showMessageRegister(text, type) {
@@ -247,6 +267,13 @@ function showMessageRegister(text, type) {
     box.classList.remove('hidden', 'success', 'error');
     txt.textContent = text;
     box.classList.add(type);
+    // Auto-hide after 3-4 seconds
+    clearTimeout(box.__hideTimer);
+    if (type === 'error') {
+        box.__hideTimer = setTimeout(() => box.classList.add('hidden'), 4000);
+    } else {
+        box.__hideTimer = setTimeout(() => box.classList.add('hidden'), 3000);
+    }
 }
 
 function clearMessage() {
