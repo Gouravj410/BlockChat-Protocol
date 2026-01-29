@@ -347,8 +347,8 @@ body {
 
 /* ===== LEFT SIDE - FRONTEND ===== */
 .left-side {
-    flex: 0 0 70%;
-    min-width: 65%;
+    flex: 0 0 50%;
+    min-width: 50%;
     background: white;
     padding: 0;
     display: flex;
@@ -358,6 +358,20 @@ body {
     overflow: hidden;
     position: relative;
     border-right: 2px solid #e0e0e0;
+}
+
+/* ===== RIGHT SIDE - BACKEND ===== */
+.right-side {
+    flex: 1;
+    min-width: 50%;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    overflow: hidden;
+    position: relative;
 }
 
 /* PAGES IN LEFT PANEL */
@@ -477,33 +491,41 @@ body {
 
 .backend-wrapper {
     width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-    padding: 0 20px;
+    max-width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 30px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-start;
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 .backend-wrapper h2 {
     color: white;
     text-align: center;
-    margin-bottom: 30px;
+    margin: 0 0 20px 0;
+    padding: 0;
     font-size: 24px;
-    margin-top: 0;
+    font-weight: 700;
     width: 100%;
 }
 
 .flow-container {
     position: relative;
-    max-height: 85vh;
-    overflow-y: auto;
-    padding-right: 8px;
     width: 100%;
+    max-width: 500px;
+    height: calc(100% - 80px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 15px 0 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 4px;
+    box-sizing: border-box;
 }
 
 .flow-diagram {
@@ -525,11 +547,11 @@ body {
     border-radius: 12px;
     padding: 18px 16px;
     display: none;
+    flex-direction: row;
     gap: 12px;
-    margin-bottom: 16px;
+    margin: 0;
     transition: all 0.5s ease;
     backdrop-filter: blur(10px);
-    min-height: auto;
     animation: slideInStep 0.4s ease forwards;
     width: 100%;
     max-width: 450px;
@@ -674,9 +696,9 @@ body {
 
 /* ARROW STYLING */
 .arrow {
-    height: 24px;
+    height: 20px;
     position: relative;
-    margin: 2px 0 8px 0;
+    margin: 0;
     display: none;
     width: 100%;
     max-width: 450px;
@@ -715,26 +737,30 @@ body {
 /* RESPONSIVE DESIGN */
 @media (max-width: 1024px) {
     .container {
-        flex-direction: column;
+        flex-direction: row;
     }
 
-    .left-side,
+    .left-side {
+        flex: 0 0 50%;
+        border-right: 2px solid #e0e0e0;
+        border-bottom: none;
+    }
+
     .right-side {
-        flex: auto;
-        border-right: none;
-        border-bottom: 2px solid #e0e0e0;
-        min-height: 50vh;
+        flex: 0 0 50%;
+    }
+
+    .flow-container {
+        max-width: 100%;
     }
 
     .step {
-        min-height: 80px;
+        min-width: 100%;
+        max-width: 100%;
     }
 
-    .step-number {
-        flex: 0 0 40px;
-        width: 40px;
-        height: 40px;
-        font-size: 14px;
+    .arrow {
+        max-width: 100%;
     }
 }
 
