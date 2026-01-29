@@ -483,3 +483,98 @@ window.addEventListener('load', () => {
 });
 
 // Initialize floating lines when each page becomes active (will be called when needed)
+
+// ===== AUTO CONTRAST FOR TEXT BASED ON BACKGROUND =====
+function parseRGBString(rgb) {
+    if (!rgb) return null;
+    // handle rgba(...) or rgb(...)
+    const m = rgb.match(/rgba?\(([^)]+)\)/);
+    if (!m) return null;
+    const parts = m[1].split(',').map(p => p.trim());
+    const r = Number(parts[0]);
+    const g = Number(parts[1]);
+    const b = Number(parts[2]);
+    const a = parts[3] !== undefined ? Number(parts[3]) : 1;
+    return { r, g, b, a };
+}
+
+function getEffectiveBackgroundColor(el) {
+    let node = el;
+    while (node && node !== document.documentElement) {
+        const style = getComputedStyle(node);
+        const bg = style.backgroundColor;
+        const parsed = parseRGBString(bg);
+        if (parsed && parsed.a > 0 && !(parsed.r === 0 && parsed.g === 0 && parsed.b === 0 && bg === 'transparent')) {
+            return parsed;
+        }
+        node = node.parentElement;
+    }
+    // fallback to body
+    const bodyBg = parseRGBString(getComputedStyle(document.body).backgroundColor);
+    return bodyBg || { r: 245, g: 245, b: 245, a: 1 };
+}
+
+function srgbChannelToLinear(c) {
+    c = c / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+}
+
+function luminance(rgb) {
+    const r = srgbChannelToLinear(rgb.r);
+    const g = srgbChannelToLinear(rgb.g);
+    const b = srgbChannelToLinear(rgb.b);
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function updateAutoContrast() {
+    try {
+        const selectors = [
+            '.dashboard-content', '.left-side', '.page-content', '.step', '.menu-btn',
+            '.dashboard-header-left h2', '.dashboard-header p', '.subtitle', '.page-content h1',
+            '.flow-container', '.backend-wrapper h2', '.form-group label', '.message-box', '.step-title', '.step-text'
+        ];
+
+        selectors.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => {
+                const bg = getEffectiveBackgroundColor(el);
+                const lum = luminance(bg);
+                // WCAG approximate threshold: 0.6 -> choose dark text; lower -> light text
+                const useDark = lum > 0.6;
+                el.style.color = useDark ? '#111' : '#ffffff';
+            });
+        });
+    } catch (e) {
+        console.error('Auto contrast update failed', e);
+    }
+}
+
+// Observe body and main background containers for changes
+function setupAutoContrastObservers() {
+    const observeTargets = ['body', '#register-bg', '#login-bg', '#dashboard-bg'];
+    const observer = new MutationObserver(() => {
+        // debounce
+        clearTimeout(window.__autoContrastTimer);
+        window.__autoContrastTimer = setTimeout(updateAutoContrast, 120);
+    });
+
+    observeTargets.forEach(sel => {
+        const node = document.querySelector(sel);
+        if (node) {
+            observer.observe(node, { attributes: true, childList: true, subtree: true });
+        }
+    });
+
+    // also run on resize
+    window.addEventListener('resize', () => {
+        clearTimeout(window.__autoContrastTimer);
+        window.__autoContrastTimer = setTimeout(updateAutoContrast, 120);
+    });
+}
+
+// Run on load
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        updateAutoContrast();
+        setupAutoContrastObservers();
+    }, 300);
+});
