@@ -1,31 +1,45 @@
-// ===== TAB SWITCHING =====
-document.querySelectorAll('.tab-button').forEach(button => {
-    button.addEventListener('click', () => {
-        const tabName = button.dataset.tab;
-
-        // Hide all tab contents
-        document.querySelectorAll('.tab-content').forEach(content => {
-            content.classList.remove('active');
-        });
-
-        // Deactivate all buttons
-        document.querySelectorAll('.tab-button').forEach(btn => {
-            btn.classList.remove('active');
-        });
-
-        // Show selected tab and activate button
-        document.getElementById(tabName).classList.add('active');
-        button.classList.add('active');
-
-        // Switch flow diagram
-        document.querySelectorAll('.flow-diagram').forEach(flow => {
-            flow.classList.remove('active');
-        });
-        document.getElementById(tabName + '-flow').classList.add('active');
-
-        // Clear messages
-        clearMessage();
+// ===== PAGE NAVIGATION =====
+function showPage(pageId) {
+    // Destroy previous floating lines
+    destroyFloatingLines();
+    
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
     });
+    
+    // Show selected page
+    const page = document.getElementById(pageId);
+    if (page) {
+        page.classList.add('active');
+        
+        // Initialize floating lines for the page
+        let bgContainerId = null;
+        if (pageId === 'register-page') {
+            bgContainerId = 'register-bg';
+        } else if (pageId === 'login-page') {
+            bgContainerId = 'login-bg';
+        }
+        
+        if (bgContainerId) {
+            setTimeout(() => {
+                initFloatingLines(bgContainerId);
+            }, 100);
+        }
+    }
+}
+
+// Navigation links
+document.getElementById('to-login-from-register').addEventListener('click', (e) => {
+    e.preventDefault();
+    clearMessage();
+    showPage('login-page');
+});
+
+document.getElementById('to-register-from-login').addEventListener('click', (e) => {
+    e.preventDefault();
+    clearMessage();
+    showPage('register-page');
 });
 
 // ===== LOGIN FORM HANDLING =====
@@ -37,27 +51,29 @@ async function handleLogin() {
 
     // Validate inputs
     if (!email || !password) {
-        showMessage('Please fill in all fields', 'error');
+        showMessageLogin('Please fill in all fields', 'error');
         return;
     }
 
     if (!isValidEmail(email)) {
-        showMessage('Please enter a valid email', 'error');
+        showMessageLogin('Please enter a valid email', 'error');
         return;
     }
 
     // Disable form
-    disableFormInputs();
+    disableFormInputs('login');
     setButtonLoading('login-btn', true);
 
-    // Clear previous results
+    // Clear previous results and show login flow
     clearFlowResults('login');
+    document.getElementById('login-flow').classList.add('active');
+    document.getElementById('register-flow').classList.remove('active');
 
     // Run animation
     await animateLoginFlow(email, password);
 
     // Reset form
-    disableFormInputs(false);
+    disableFormInputs('login', false);
     setButtonLoading('login-btn', false);
 }
 
@@ -146,35 +162,28 @@ async function animateLoginFlow(email, password) {
         }
 
         if (data.success) {
-            showMessage('✓ Login successful! Welcome back.', 'success');
+            showMessageLogin('✓ Login successful! Welcome back.', 'success');
 
             // Get user name from the response
             const userName = data.user?.name || 'User';
 
-            // Switch left panel to dashboard after a delay
+            // Switch to dashboard after a delay
             setTimeout(() => {
-                // hide form and show dashboard section inside left panel
-                const formSection = document.getElementById('form-section');
-                const dashboardSection = document.getElementById('dashboard-section');
-                if (formSection && dashboardSection) {
-                    formSection.classList.add('hidden');
-                    dashboardSection.classList.remove('hidden');
-                }
-
+                showPage('dashboard-page');
                 document.getElementById('welcome-user').textContent = `Welcome back, ${userName}!`;
 
-                // Initialize floating lines animation inside dashboard bg
+                // Initialize floating lines animation
                 initFloatingLines('dashboard-bg');
             }, 2000);
         } else {
-            showMessage('✗ ' + data.message, 'error');
+            showMessageLogin('✗ ' + data.message, 'error');
         }
 
         // Steps remain visible - do not clear
 
     } catch (error) {
         console.error('Login error:', error);
-        showMessage('Connection error. Make sure backend is running on port 5000', 'error');
+        showMessageLogin('Connection error. Make sure backend is running on port 5000', 'error');
         clearStepStyles('#login-flow');
     }
 }
@@ -190,37 +199,39 @@ async function handleRegister() {
 
     // Validate inputs
     if (!name || !email || !password || !confirm) {
-        showMessage('Please fill in all fields', 'error');
+        showMessageRegister('Please fill in all fields', 'error');
         return;
     }
 
     if (!isValidEmail(email)) {
-        showMessage('Please enter a valid email', 'error');
+        showMessageRegister('Please enter a valid email', 'error');
         return;
     }
 
     if (password.length < 6) {
-        showMessage('Password must be at least 6 characters', 'error');
+        showMessageRegister('Password must be at least 6 characters', 'error');
         return;
     }
 
     if (password !== confirm) {
-        showMessage('Passwords do not match', 'error');
+        showMessageRegister('Passwords do not match', 'error');
         return;
     }
 
     // Disable form
-    disableFormInputs();
+    disableFormInputs('register');
     setButtonLoading('register-btn', true);
 
-    // Clear previous results
+    // Clear previous results and show register flow
     clearFlowResults('register');
+    document.getElementById('register-flow').classList.add('active');
+    document.getElementById('login-flow').classList.remove('active');
 
     // Run animation
     await animateRegisterFlow(name, email, password);
 
     // Reset form
-    disableFormInputs(false);
+    disableFormInputs('register', false);
     setButtonLoading('register-btn', false);
 }
 
@@ -304,33 +315,16 @@ async function animateRegisterFlow(name, email, password) {
         }
 
         if (data.success) {
-            showMessage('✓ Account created! Please check your email to verify.', 'success');
-            
-            // Get user name from the response
-            const userName = data.user?.name || 'User';
-            
-            // Switch left panel to dashboard after a delay
-            setTimeout(() => {
-                const formSection = document.getElementById('form-section');
-                const dashboardSection = document.getElementById('dashboard-section');
-                if (formSection && dashboardSection) {
-                    formSection.classList.add('hidden');
-                    dashboardSection.classList.remove('hidden');
-                }
-                document.getElementById('welcome-user').textContent = `Welcome, ${userName}!`;
-
-                // Initialize floating lines animation inside dashboard bg
-                initFloatingLines('dashboard-bg');
-            }, 2000);
+            showMessageRegister('✓ Account created! You can now log in with your credentials.', 'success');
         } else {
-            showMessage('✗ ' + data.message, 'error');
+            showMessageRegister('✗ ' + data.message, 'error');
         }
 
         // Steps remain visible - do not clear
 
     } catch (error) {
         console.error('Register error:', error);
-        showMessage('Connection error. Make sure backend is running on port 5000', 'error');
+        showMessageRegister('Connection error. Make sure backend is running on port 5000', 'error');
         clearStepStyles('#register-flow');
     }
 }
@@ -345,9 +339,12 @@ function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function disableFormInputs(disable = true) {
-    const currentTab = document.querySelector('.tab-content.active');
-    const inputs = currentTab.querySelectorAll('input');
+function disableFormInputs(formType = 'login', disable = true) {
+    const pageId = formType === 'register' ? 'register-page' : 'login-page';
+    const page = document.getElementById(pageId);
+    if (!page) return;
+    
+    const inputs = page.querySelectorAll('input');
     inputs.forEach(input => {
         input.disabled = disable;
     });
@@ -358,9 +355,7 @@ function setButtonLoading(buttonId, loading) {
     if (loading) {
         button.disabled = true;
         button.classList.add('loading');
-        button.textContent = '';
-        const tabName = buttonId.split('-')[0];
-        button.textContent = tabName === 'login' ? 'Logging in...' : 'Registering...';
+        button.textContent = buttonId.includes('login') ? 'Logging in...' : 'Registering...';
     } else {
         button.disabled = false;
         button.classList.remove('loading');
@@ -368,9 +363,18 @@ function setButtonLoading(buttonId, loading) {
     }
 }
 
-function showMessage(text, type) {
-    const messageBox = document.getElementById('message-box');
-    const messageText = document.getElementById('message-text');
+function showMessageLogin(text, type) {
+    const messageBox = document.getElementById('message-box-login');
+    const messageText = document.getElementById('message-text-login');
+
+    messageBox.classList.remove('hidden', 'success', 'error');
+    messageText.textContent = text;
+    messageBox.classList.add(type);
+}
+
+function showMessageRegister(text, type) {
+    const messageBox = document.getElementById('message-box-register');
+    const messageText = document.getElementById('message-text-register');
 
     messageBox.classList.remove('hidden', 'success', 'error');
     messageText.textContent = text;
@@ -378,8 +382,10 @@ function showMessage(text, type) {
 }
 
 function clearMessage() {
-    const messageBox = document.getElementById('message-box');
-    messageBox.classList.add('hidden');
+    const messageBoxLogin = document.getElementById('message-box-login');
+    const messageBoxRegister = document.getElementById('message-box-register');
+    if (messageBoxLogin) messageBoxLogin.classList.add('hidden');
+    if (messageBoxRegister) messageBoxRegister.classList.add('hidden');
 }
 
 function clearFlowResults(flowType) {
@@ -438,34 +444,42 @@ document.getElementById('logout-btn').addEventListener('click', () => {
     document.getElementById('register-password').value = '';
     document.getElementById('register-confirm').value = '';
     
-    // Switch back to login page
-    const formSection = document.getElementById('form-section');
-    const dashboardSection = document.getElementById('dashboard-section');
-    if (formSection && dashboardSection) {
-        dashboardSection.classList.add('hidden');
-        formSection.classList.remove('hidden');
-    }
+    // Clear all flow results
+    clearFlowResults('login');
+    clearFlowResults('register');
     
-    // Reset to login tab
-    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-    document.querySelector('[data-tab="login"]').classList.add('active');
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-    document.getElementById('login').classList.add('active');
-    document.querySelectorAll('.flow-diagram').forEach(flow => flow.classList.remove('active'));
-    document.getElementById('login-flow').classList.add('active');
+    // Switch back to register page
+    showPage('register-page');
+    clearMessage();
     
-    showMessage('✓ Logged out successfully', 'success');
-    setTimeout(() => clearMessage(), 2000);
+    // Initialize floating lines for register page
+    setTimeout(() => {
+        initFloatingLines('register-bg');
+    }, 100);
+    
+    showMessageRegister('✓ Logged out successfully', 'success');
+    setTimeout(() => {
+        document.getElementById('message-box-register').classList.add('hidden');
+    }, 2000);
 });
 
 document.getElementById('messages-btn').addEventListener('click', () => {
-    showMessage('📨 Messages feature coming soon!', 'success');
+    showMessageRegister('📨 Messages feature coming soon!', 'success');
 });
 
 document.getElementById('profile-btn').addEventListener('click', () => {
-    showMessage('👤 Profile feature coming soon!', 'success');
+    showMessageRegister('👤 Profile feature coming soon!', 'success');
 });
 
 document.getElementById('settings-btn').addEventListener('click', () => {
-    showMessage('⚙️ Settings feature coming soon!', 'success');
+    showMessageRegister('⚙️ Settings feature coming soon!', 'success');
 });
+
+// Initialize floating lines for all pages on load
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        initFloatingLines('register-bg');
+    }, 200);
+});
+
+// Initialize floating lines when each page becomes active (will be called when needed)

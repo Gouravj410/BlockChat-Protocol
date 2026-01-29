@@ -12,78 +12,84 @@
         <!-- LEFT SIDE - FRONTEND SIMULATION -->
         <div class="left-side">
             <div class="frontend-wrapper">
-                                <!-- LOGIN/REGISTER SECTION -->
-                                <div id="form-section">
-                <h1>BlockChat</h1>
-                <p class="subtitle">Educational Backend Visualizer</p>
-
-                <!-- TAB NAVIGATION -->
-                <div class="tabs">
-                    <button class="tab-button active" data-tab="login">Login</button>
-                    <button class="tab-button" data-tab="register">Register</button>
-                </div>
-
-                <!-- LOGIN FORM -->
-                <div id="login" class="tab-content active">
-                    <div class="form-container">
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" id="login-email" placeholder="your@email.com">
+                
+                <!-- REGISTER PAGE (DEFAULT) -->
+                <div id="register-page" class="page active">
+                    <div id="register-bg" class="floating-lines-container"></div>
+                    <div class="page-content">
+                        <h1>BlockChat</h1>
+                        <p class="subtitle">Educational Backend Visualizer</p>
+                        <div class="form-container">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" id="register-name" placeholder="John Doe">
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="register-email" placeholder="your@email.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Password</label>
+                                <input type="password" id="register-password" placeholder="••••••••">
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm Password</label>
+                                <input type="password" id="register-confirm" placeholder="••••••••">
+                            </div>
+                            <button class="form-button" id="register-btn">Register</button>
+                            <div class="form-links">
+                                <p>Already have an account? <a href="#" id="to-login-from-register">Login here</a></p>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Password</label>
-                            <input type="password" id="login-password" placeholder="••••••••">
-                        </div>
-                        <button class="form-button" id="login-btn">Login</button>
-                        <div class="form-links">
-                            <a href="#forgot">Forgot password?</a>
+                        <div id="message-box-register" class="message-box hidden">
+                            <span id="message-text-register"></span>
                         </div>
                     </div>
                 </div>
 
-                <!-- REGISTER FORM -->
-                <div id="register" class="tab-content">
-                    <div class="form-container">
-                        <div class="form-group">
-                            <label>Full Name</label>
-                            <input type="text" id="register-name" placeholder="John Doe">
+                <!-- LOGIN PAGE -->
+                <div id="login-page" class="page">
+                    <div id="login-bg" class="floating-lines-container"></div>
+                    <div class="page-content">
+                        <h1>BlockChat</h1>
+                        <p class="subtitle">Educational Backend Visualizer</p>
+                        <div class="form-container">
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="login-email" placeholder="your@email.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Password</label>
+                                <input type="password" id="login-password" placeholder="••••••••">
+                            </div>
+                            <button class="form-button" id="login-btn">Login</button>
+                            <div class="form-links">
+                                <p>Don't have an account? <a href="#" id="to-register-from-login">Register here</a></p>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" id="register-email" placeholder="your@email.com">
+                        <div id="message-box-login" class="message-box hidden">
+                            <span id="message-text-login"></span>
                         </div>
-                        <div class="form-group">
-                            <label>Password</label>
-                            <input type="password" id="register-password" placeholder="••••••••">
-                        </div>
-                        <div class="form-group">
-                            <label>Confirm Password</label>
-                            <input type="password" id="register-confirm" placeholder="••••••••">
-                        </div>
-                        <button class="form-button" id="register-btn">Register</button>
                     </div>
                 </div>
 
-                <!-- MESSAGE BOX -->
-                <div id="message-box" class="message-box hidden">
-                    <span id="message-text"></span>
-                                </div>
-
-                                <!-- DASHBOARD SECTION (HIDDEN BY DEFAULT) -->
-                                <div id="dashboard-section" class="dashboard-section hidden">
-                                    <div id="dashboard-bg" class="floating-lines-container"></div>
-                                    <div class="dashboard-header-left">
-                                        <h2>Welcome to BlockChat</h2>
-                                        <p id="welcome-user">Welcome, User!</p>
-                                    </div>
-                                    <div class="dashboard-menu">
-                                        <button class="menu-btn" id="messages-btn">📨 Messages</button>
-                                        <button class="menu-btn" id="profile-btn">👤 Profile</button>
-                                        <button class="menu-btn" id="settings-btn">⚙️ Settings</button>
-                                        <button class="menu-btn logout" id="logout-btn">🚪 Logout</button>
-                                    </div>
-                                </div>
+                <!-- DASHBOARD PAGE (HIDDEN BY DEFAULT) -->
+                <div id="dashboard-page" class="page">
+                    <div id="dashboard-bg" class="floating-lines-container"></div>
+                    <div class="page-content dashboard-content">
+                        <div class="dashboard-header-left">
+                            <h2>Welcome to BlockChat</h2>
+                            <p id="welcome-user">Welcome, User!</p>
+                        </div>
+                        <div class="dashboard-menu">
+                            <button class="menu-btn" id="messages-btn">📨 Messages</button>
+                            <button class="menu-btn" id="profile-btn">👤 Profile</button>
+                            <button class="menu-btn" id="settings-btn">⚙️ Settings</button>
+                            <button class="menu-btn logout" id="logout-btn">🚪 Logout</button>
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </div>
 

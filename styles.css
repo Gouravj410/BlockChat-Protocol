@@ -129,9 +129,10 @@ body {
     min-width: 60%;
     background: white;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 30px 20px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 0;
     border-right: 2px solid #e0e0e0;
     overflow-y: auto;
     position: relative;
@@ -139,8 +140,14 @@ body {
 
 .frontend-wrapper {
     width: 100%;
-    max-width: 480px;
-    margin: 0 auto;
+    height: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    position: relative;
 }
 
 .frontend-wrapper h1 {
@@ -157,44 +164,31 @@ body {
     font-size: 14px;
 }
 
-/* TAB STYLING */
-.tabs {
+/* PAGE CONTENT STYLING */
+.page-content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 500px;
     display: flex;
-    gap: 10px;
-    margin-bottom: 30px;
-    border-bottom: 2px solid #ecf0f1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
 }
 
-.tab-button {
-    flex: 1;
-    padding: 12px;
-    background: none;
-    border: none;
-    border-bottom: 3px solid transparent;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    color: #95a5a6;
-    transition: all 0.3s ease;
+.page-content h1 {
+    font-size: 32px;
+    color: #2c3e50;
+    margin: 0;
+    text-align: center;
 }
 
-.tab-button:hover {
-    color: #34495e;
-}
-
-.tab-button.active {
-    color: #3498db;
-    border-bottom-color: #3498db;
-}
-
-/* FORM STYLING */
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
-    animation: fadeIn 0.3s ease;
+.page-content .subtitle {
+    font-size: 14px;
+    color: #7f8c8d;
+    margin: 0 0 20px 0;
+    text-align: center;
 }
 
 @keyframes fadeIn {
@@ -351,53 +345,75 @@ body {
     }
 }
 
-/* ===== RIGHT SIDE - BACKEND VISUALIZER ===== */
-.right-side {
-    flex: 1;
-    min-width: 35%;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    padding: 25px 20px;
+/* ===== LEFT SIDE - FRONTEND ===== */
+.left-side {
+    flex: 0 0 70%;
+    min-width: 65%;
+    background: white;
+    padding: 0;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    overflow-y: auto;
+    align-items: stretch;
+    justify-content: stretch;
+    overflow: hidden;
+    position: relative;
+    border-right: 2px solid #e0e0e0;
 }
 
-/* DASHBOARD SECTION IN LEFT PANEL */
-#form-section,
-#dashboard-section {
-    width: 100%;
-}
-
-#form-section.hidden,
-#dashboard-section.hidden {
-    display: none;
-}
-
-.dashboard-section {
+/* PAGES IN LEFT PANEL */
+.page {
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 30px;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.page.active {
+    display: flex;
+}
+
+/* FLOATING LINES BACKGROUND */
+.floating-lines-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.dashboard-content {
+    gap: 24px;
+}
+
+.dashboard-section {
+    position: relative;
+    width: 100%;
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 24px;
-    padding: 40px;
+    padding: 40px 30px;
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 .dashboard-header-left h2 {
     font-size: 28px;
     margin: 0 0 5px 0;
-    background: linear-gradient(135deg, #3498db, #2ecc71);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
     color: #2c3e50;
+    font-weight: 700;
 }
 
 .dashboard-header-left p {
@@ -453,8 +469,8 @@ body {
     pointer-events: none;
 }
 
-.dashboard-section .dashboard-header-left,
-.dashboard-section .dashboard-menu {
+.page .dashboard-header-left,
+.page .dashboard-menu {
     position: relative;
     z-index: 2;
 }

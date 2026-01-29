@@ -360,7 +360,9 @@ let floatingLinesInstance = null;
 window.initFloatingLines = function(containerId = 'floating-lines-bg') {
     const container = document.getElementById(containerId);
     if (container && !floatingLinesInstance) {
+        console.log('Initializing FloatingLines in container:', containerId, container);
         floatingLinesInstance = new FloatingLines(container);
+        console.log('FloatingLines initialized');
     }
     return floatingLinesInstance;
 };
