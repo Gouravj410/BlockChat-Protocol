@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Flow Diagnostic</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+        .log { margin: 5px 0; padding: 5px; background: #0a0a0a; border-left: 3px solid #0f0; }
+        .error { border-left-color: #f00; color: #ff6666; }
+        .success { border-left-color: #0f0; color: #66ff66; }
+        .info { border-left-color: #0ff; color: #66ffff; }
+        button { padding: 10px 20px; margin: 10px 0; background: #0f0; color: #000; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>BlockChat Login Diagnostic</h2>
+    <button onclick="runDiagnostic()">Run Login Test</button>
+    <hr>
+    <div id="output"></div>
+
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            output.appendChild(div);
+            console.log(msg);
+        }
+
+        async function runDiagnostic() {
+            output.innerHTML = '';
+            log('🔍 Starting Login Flow Diagnostic...', 'info');
+            
+            try {
+                // Test 1: Check backend availability
+                log('1️⃣ Testing backend connectivity...', 'info');
+                const healthRes = await fetch('http://localhost:5000/api/health');
+                if (!healthRes.ok) throw new Error(`Health check failed: ${healthRes.status}`);
+                log('✅ Backend is running', 'success');
+
+                // Test 2: Simulate login request
+                log('2️⃣ Sending login request...', 'info');
+                const loginRes = await fetch('http://localhost:5000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: 'user@example.com', password: 'password123' })
+                });
+                
+                log(`   Response Status: ${loginRes.status}`, 'info');
+                log(`   Response OK: ${loginRes.ok}`, loginRes.ok ? 'success' : 'error');
+
+                const data = await loginRes.json();
+                log(`   data.success = ${data.success}`, data.success ? 'success' : 'error');
+                log(`   data.user = ${JSON.stringify(data.user)}`, data.user ? 'success' : 'error');
+                log(`   data.message = ${data.message}`, 'info');
+                log(`   flowSteps.length = ${data.flowSteps?.length || 0}`, data.flowSteps?.length > 0 ? 'success' : 'error');
+
+                // Test 3: Check if frontend can be reached
+                log('3️⃣ Testing frontend...', 'info');
+                const frontendRes = await fetch('http://localhost:8000/index.html');
+                log(`   Frontend Status: ${frontendRes.status}`, frontendRes.ok ? 'success' : 'error');
+
+                // Test 4: Analyze script.js
+                log('4️⃣ Fetching script.js for analysis...', 'info');
+                const scriptRes = await fetch('http://localhost:8000/script.js');
+                const scriptText = await scriptRes.text();
+                
+                const hasShowPage = scriptText.includes('function showPage');
+                const hasAnimateLogin = scriptText.includes('async function animateLoginFlow');
+                const hasLocalStorage = scriptText.includes('localStorage.setItem');
+                const hasDataSuccess = scriptText.includes('if (data.success)');
+                
+                log(`   Has showPage function: ${hasShowPage}`, hasShowPage ? 'success' : 'error');
+                log(`   Has animateLoginFlow: ${hasAnimateLogin}`, hasAnimateLogin ? 'success' : 'error');
+                log(`   Has localStorage usage: ${hasLocalStorage}`, hasLocalStorage ? 'success' : 'error');
+                log(`   Has data.success check: ${hasDataSuccess}`, hasDataSuccess ? 'success' : 'error');
+
+                // Test 5: Summary
+                log('', 'info');
+                log('✅ DIAGNOSTIC COMPLETE', 'success');
+                log('If you still see redirect to register after login, it could be:', 'info');
+                log('  • Page refreshing (check Network tab for unexpected reloads)', 'info');
+                log('  • Response not being JSON (parse error)', 'info');
+                log('  • data.success being false when it should be true', 'info');
+                log('  • localStorage not persisting', 'info');
+                log('  • showPage() being called elsewhere', 'info');
+
+            } catch (error) {
+                log(`❌ ERROR: ${error.message}`, 'error');
+                log(`${error.stack}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

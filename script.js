@@ -1,194 +1,136 @@
 // ===== PAGE NAVIGATION =====
 function showPage(pageId) {
-    // Destroy previous floating lines
-    destroyFloatingLines();
-    
-    // Hide all pages
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-    });
-    
-    // Show selected page
+    console.log('📍 showPage("' + pageId + '") called');
+    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
     const page = document.getElementById(pageId);
     if (page) {
         page.classList.add('active');
-        
-        // Initialize floating lines for the page
-        let bgContainerId = null;
-        if (pageId === 'register-page') {
-            bgContainerId = 'register-bg';
-        } else if (pageId === 'login-page') {
-            bgContainerId = 'login-bg';
-        }
-        
-        if (bgContainerId) {
-            setTimeout(() => {
-                initFloatingLines(bgContainerId);
-            }, 100);
-        }
+        console.log('📍 ✅ Page "' + pageId + '" is now active');
+    } else {
+        console.error('📍 ❌ Page element not found:', pageId);
     }
+    destroyFloatingLines();
+    setTimeout(() => {
+        const bgId = pageId === 'register-page' ? 'register-bg' : pageId === 'login-page' ? 'login-bg' : 'dashboard-bg';
+        console.log('📍 Initializing floating lines for:', bgId);
+        initFloatingLines(bgId);
+    }, 100);
 }
 
-// Navigation links
-document.getElementById('to-login-from-register').addEventListener('click', (e) => {
-    e.preventDefault();
-    clearMessage();
-    showPage('login-page');
-});
+// Navigation
+document.getElementById('to-login-from-register').addEventListener('click', (e) => { e.preventDefault(); showPage('login-page'); });
+document.getElementById('to-register-from-login').addEventListener('click', (e) => { e.preventDefault(); showPage('register-page'); });
 
-document.getElementById('to-register-from-login').addEventListener('click', (e) => {
-    e.preventDefault();
-    clearMessage();
-    showPage('register-page');
-});
-
-// ===== LOGIN FORM HANDLING =====
+// ===== LOGIN =====
 document.getElementById('login-btn').addEventListener('click', handleLogin);
 
 async function handleLogin() {
+    console.log('🔐 [LOGIN] handleLogin() called');
     const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value.trim();
-
-    // Validate inputs
+    
+    console.log('🔐 [LOGIN] Email:', email, 'Password length:', password.length);
+    
     if (!email || !password) {
+        console.warn('🔐 [LOGIN] ❌ Missing email or password');
         showMessageLogin('Please fill in all fields', 'error');
         return;
     }
-
     if (!isValidEmail(email)) {
+        console.warn('🔐 [LOGIN] ❌ Invalid email format');
         showMessageLogin('Please enter a valid email', 'error');
         return;
     }
 
-    // Disable form
+    console.log('🔐 [LOGIN] Preparing UI...');
     disableFormInputs('login');
     setButtonLoading('login-btn', true);
-
-    // Clear previous results and show login flow
     clearFlowResults('login');
     document.getElementById('login-flow').classList.add('active');
     document.getElementById('register-flow').classList.remove('active');
+    console.log('🔐 [LOGIN] UI ready');
 
-    // Run animation
-    await animateLoginFlow(email, password);
-
-    // Reset form
-    disableFormInputs('login', false);
-    setButtonLoading('login-btn', false);
-}
-
-async function animateLoginFlow(email, password) {
     try {
-        const response = await fetch('http://localhost:5000/api/login', {
+        console.log('🔐 [LOGIN] Sending request to http://localhost:5000/api/login...');
+        const resp = await fetch('http://localhost:5000/api/login', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
         });
 
-        const data = await response.json();
-        const flowSteps = data.flowSteps || [];
+        console.log('🔐 [LOGIN] Response status:', resp.status);
+        const data = await resp.json();
+        console.log('🔐 [LOGIN] Response data:', JSON.stringify(data, null, 2));
 
-        // Display each step from the server
-        for (const flowStep of flowSteps) {
-            const stepIndex = flowStep.step - 1;
-            const stepElement = document.querySelector(`#login-flow [data-step="${flowStep.step}"]`);
-            if (!stepElement) continue;
-
-            // Show step with animation
-            stepElement.classList.add('show');
+        // Show each flow step
+        console.log('🔐 [LOGIN] Animating', (data.flowSteps || []).length, 'steps...');
+        for (const step of (data.flowSteps || [])) {
+            console.log('🔐 [LOGIN] Step', step.step, '-', step.status);
+            const el = document.querySelector(`#login-flow [data-step="${step.step}"]`);
+            if (!el) {
+                console.warn('🔐 [LOGIN] Step element not found for step', step.step);
+                continue;
+            }
             
-            // Show arrow before this step (if not the first step)
-            if (flowStep.step > 1) {
-                const previousArrow = stepElement.previousElementSibling;
-                if (previousArrow && previousArrow.classList.contains('arrow')) {
-                    previousArrow.classList.add('show');
-                }
+            el.classList.add('show');
+            if (step.step > 1) {
+                const arrow = el.previousElementSibling;
+                if (arrow?.classList.contains('arrow')) arrow.classList.add('show');
             }
-
-            // Reset classes
-            stepElement.classList.remove('success', 'error', 'inactive', 'active');
-
-            // Add appropriate class based on status
-            if (flowStep.status === 'success') {
-                stepElement.classList.add('success');
-            } else if (flowStep.status === 'error') {
-                stepElement.classList.add('error');
-            } else if (flowStep.status === 'inactive') {
-                stepElement.classList.add('inactive');
-            } else if (flowStep.status === 'active') {
-                stepElement.classList.add('active');
-            }
-
-            // Update content based on step
-            if (flowStep.step === 2 && flowStep.data) {
-                document.getElementById('display-email').textContent = flowStep.data.email;
-                document.getElementById('display-password').textContent = flowStep.data.password;
-            }
-
-            // Update result indicators
-            if (flowStep.result) {
-                const resultMap = {
-                    3: 'server-result',
-                    4: 'db-result',
-                    5: 'auth-result',
-                    6: 'session-result',
-                    7: 'response-result'
-                };
-                const resultId = resultMap[flowStep.step];
-                if (resultId) {
-                    const resultEl = document.getElementById(resultId);
-                    if (resultEl) {
-                        const badge = flowStep.status === 'success' ? 'success' : 'error';
-                        resultEl.innerHTML = `<span class="result-badge ${badge}">${flowStep.result}</span>`;
-                    }
-                }
-            }
-
-            // Update response text
-            if (flowStep.step === 7) {
-                const responseText = document.getElementById('response-text');
-                responseText.textContent = flowStep.text;
-            }
-
-            // Wait before moving to next step (2 seconds for visibility)
-            await sleep(2000);
             
-            // If this step is an error, stop showing remaining steps
-            if (flowStep.status === 'error') {
-                break;
+            el.classList.remove('success', 'error', 'inactive', 'active');
+            el.classList.add(step.status);
+            
+            if (step.step === 2 && step.data) {
+                document.getElementById('display-email').textContent = step.data.email;
+                document.getElementById('display-password').textContent = step.data.password;
             }
+            
+            if (step.result) {
+                const map = {3: 'server-result', 4: 'db-result', 5: 'auth-result', 6: 'session-result', 7: 'response-result'};
+                const resEl = document.getElementById(map[step.step]);
+                if (resEl) resEl.innerHTML = `<span class="result-badge ${step.status}">${step.result}</span>`;
+            }
+            
+            if (step.step === 7) {
+                const txt = document.getElementById('response-text');
+                if (txt) txt.textContent = step.text;
+            }
+            
+            await new Promise(r => setTimeout(r, 2000));
+            if (step.status === 'error') break;
         }
 
+        console.log('🔐 [LOGIN] data.success:', data.success);
         if (data.success) {
-            showMessageLogin('✓ Login successful! Welcome back.', 'success');
-
-            // Get user name from the response
+            console.log('🔐 [LOGIN] ✅ Login successful!');
+            showMessageLogin('✓ Login successful!', 'success');
             const userName = data.user?.name || 'User';
-
-            // Switch to dashboard after a delay
-            setTimeout(() => {
-                showPage('dashboard-page');
-                document.getElementById('welcome-user').textContent = `Welcome back, ${userName}!`;
-
-                // Initialize floating lines animation
-                initFloatingLines('dashboard-bg');
-            }, 2000);
+            console.log('🔐 [LOGIN] Saving session with userName:', userName);
+            localStorage.setItem('loggedIn', 'true');
+            localStorage.setItem('userName', userName);
+            console.log('🔐 [LOGIN] Waiting 2 seconds before showing dashboard...');
+            await new Promise(r => setTimeout(r, 2000));
+            console.log('🔐 [LOGIN] NOW calling showPage("dashboard-page")...');
+            showPage('dashboard-page');
+            document.getElementById('welcome-user').textContent = `Welcome back, ${userName}!`;
+            console.log('🔐 [LOGIN] ✅ Dashboard displayed!');
         } else {
-            showMessageLogin('✗ ' + data.message, 'error');
+            console.error('🔐 [LOGIN] ❌ Login failed:', data.message);
+            showMessageLogin('✗ ' + (data.message || 'Login failed'), 'error');
         }
-
-        // Steps remain visible - do not clear
-
-    } catch (error) {
-        console.error('Login error:', error);
-        showMessageLogin('Connection error. Make sure backend is running on port 5000', 'error');
-        clearStepStyles('#login-flow');
+    } catch (e) {
+        console.error('🔐 [LOGIN] ❌ EXCEPTION:', e);
+        showMessageLogin('Connection error', 'error');
     }
+
+    console.log('🔐 [LOGIN] Resetting UI...');
+    disableFormInputs('login', false);
+    setButtonLoading('login-btn', false);
+    console.log('🔐 [LOGIN] Complete!');
 }
 
-// ===== REGISTER FORM HANDLING =====
+// ===== REGISTER =====
 document.getElementById('register-btn').addEventListener('click', handleRegister);
 
 async function handleRegister() {
@@ -197,140 +139,76 @@ async function handleRegister() {
     const password = document.getElementById('register-password').value.trim();
     const confirm = document.getElementById('register-confirm').value.trim();
 
-    // Validate inputs
     if (!name || !email || !password || !confirm) {
         showMessageRegister('Please fill in all fields', 'error');
         return;
     }
-
     if (!isValidEmail(email)) {
         showMessageRegister('Please enter a valid email', 'error');
         return;
     }
-
     if (password.length < 6) {
         showMessageRegister('Password must be at least 6 characters', 'error');
         return;
     }
-
     if (password !== confirm) {
         showMessageRegister('Passwords do not match', 'error');
         return;
     }
 
-    // Disable form
     disableFormInputs('register');
     setButtonLoading('register-btn', true);
-
-    // Clear previous results and show register flow
     clearFlowResults('register');
     document.getElementById('register-flow').classList.add('active');
     document.getElementById('login-flow').classList.remove('active');
 
-    // Run animation
-    await animateRegisterFlow(name, email, password);
+    try {
+        const resp = await fetch('http://localhost:5000/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password, confirm: password })
+        });
 
-    // Reset form
+        const data = await resp.json();
+
+        for (const step of (data.flowSteps || [])) {
+            const el = document.querySelector(`#register-flow [data-step="${step.step}"]`);
+            if (!el) continue;
+            
+            el.classList.add('show');
+            if (step.step > 1) {
+                const arrow = el.previousElementSibling;
+                if (arrow?.classList.contains('arrow')) arrow.classList.add('show');
+            }
+            
+            el.classList.remove('success', 'error', 'inactive', 'active');
+            el.classList.add(step.status);
+            
+            if (step.result) {
+                const map = {2: 'reg-validation', 3: 'reg-exists', 4: 'reg-hash', 5: 'reg-insert', 6: 'reg-confirm'};
+                const resEl = document.getElementById(map[step.step]);
+                if (resEl) resEl.innerHTML = `<span class="result-badge ${step.status}">${step.result}</span>`;
+            }
+            
+            await new Promise(r => setTimeout(r, 2000));
+            if (step.status === 'error') break;
+        }
+
+        if (data.success) {
+            showMessageRegister('✓ Account created! You can now login.', 'success');
+        } else {
+            showMessageRegister('✗ ' + (data.message || 'Registration failed'), 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        showMessageRegister('Connection error', 'error');
+    }
+
     disableFormInputs('register', false);
     setButtonLoading('register-btn', false);
 }
 
-async function animateRegisterFlow(name, email, password) {
-    try {
-        const response = await fetch('http://localhost:5000/api/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ name, email, password, confirm: password })
-        });
-
-        const data = await response.json();
-        const flowSteps = data.flowSteps || [];
-
-        // Display each step from the server
-        for (const flowStep of flowSteps) {
-            const stepIndex = flowStep.step - 1;
-            const stepElement = document.querySelector(`#register-flow [data-step="${flowStep.step}"]`);
-            if (!stepElement) continue;
-
-            // Show step with animation
-            stepElement.classList.add('show');
-            
-            // Show arrow before this step (if not the first step)
-            if (flowStep.step > 1) {
-                const previousArrow = stepElement.previousElementSibling;
-                if (previousArrow && previousArrow.classList.contains('arrow')) {
-                    previousArrow.classList.add('show');
-                }
-            }
-
-            // Reset classes
-            stepElement.classList.remove('success', 'error', 'inactive', 'active');
-
-            // Add appropriate class based on status
-            if (flowStep.status === 'success') {
-                stepElement.classList.add('success');
-            } else if (flowStep.status === 'error') {
-                stepElement.classList.add('error');
-            } else if (flowStep.status === 'inactive') {
-                stepElement.classList.add('inactive');
-            } else if (flowStep.status === 'active') {
-                stepElement.classList.add('active');
-            }
-
-            // Update result indicators
-            if (flowStep.result) {
-                const resultMap = {
-                    2: 'reg-validation',
-                    3: 'reg-exists',
-                    4: 'reg-hash',
-                    5: 'reg-insert',
-                    6: 'reg-confirm',
-                    7: 'reg-response'
-                };
-                const resultId = resultMap[flowStep.step];
-                if (resultId) {
-                    const resultEl = document.getElementById(resultId);
-                    if (resultEl) {
-                        const badge = flowStep.status === 'success' ? 'success' : 'error';
-                        resultEl.innerHTML = `<span class="result-badge ${badge}">${flowStep.result}</span>`;
-                    }
-                }
-            }
-
-            // Update response text
-            if (flowStep.step === 7) {
-                const responseText = document.getElementById('reg-response');
-                responseText.textContent = flowStep.text;
-            }
-
-            // Wait before moving to next step (2 seconds for visibility)
-            await sleep(2000);
-            
-            // If this step is an error, stop showing remaining steps
-            if (flowStep.status === 'error') {
-                break;
-            }
-        }
-
-        if (data.success) {
-            showMessageRegister('✓ Account created! You can now log in with your credentials.', 'success');
-        } else {
-            showMessageRegister('✗ ' + data.message, 'error');
-        }
-
-        // Steps remain visible - do not clear
-
-    } catch (error) {
-        console.error('Register error:', error);
-        showMessageRegister('Connection error. Make sure backend is running on port 5000', 'error');
-        clearStepStyles('#register-flow');
-    }
-}
-
 // ===== HELPER FUNCTIONS =====
-
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -339,163 +217,116 @@ function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function disableFormInputs(formType = 'login', disable = true) {
-    const pageId = formType === 'register' ? 'register-page' : 'login-page';
-    const page = document.getElementById(pageId);
-    if (!page) return;
-    
-    const inputs = page.querySelectorAll('input');
-    inputs.forEach(input => {
-        input.disabled = disable;
-    });
+function disableFormInputs(form, disable = true) {
+    const page = document.getElementById(form === 'register' ? 'register-page' : 'login-page');
+    if (page) page.querySelectorAll('input').forEach(i => i.disabled = disable);
 }
 
-function setButtonLoading(buttonId, loading) {
-    const button = document.getElementById(buttonId);
+function setButtonLoading(id, loading) {
+    const btn = document.getElementById(id);
     if (loading) {
-        button.disabled = true;
-        button.classList.add('loading');
-        button.textContent = buttonId.includes('login') ? 'Logging in...' : 'Registering...';
+        btn.disabled = true;
+        btn.textContent = id.includes('login') ? 'Logging in...' : 'Registering...';
     } else {
-        button.disabled = false;
-        button.classList.remove('loading');
-        button.textContent = buttonId.includes('login') ? 'Login' : 'Register';
+        btn.disabled = false;
+        btn.textContent = id.includes('login') ? 'Login' : 'Register';
     }
 }
 
 function showMessageLogin(text, type) {
-    const messageBox = document.getElementById('message-box-login');
-    const messageText = document.getElementById('message-text-login');
-
-    messageBox.classList.remove('hidden', 'success', 'error');
-    messageText.textContent = text;
-    messageBox.classList.add(type);
+    const box = document.getElementById('message-box-login');
+    const txt = document.getElementById('message-text-login');
+    box.classList.remove('hidden', 'success', 'error');
+    txt.textContent = text;
+    box.classList.add(type);
 }
 
 function showMessageRegister(text, type) {
-    const messageBox = document.getElementById('message-box-register');
-    const messageText = document.getElementById('message-text-register');
-
-    messageBox.classList.remove('hidden', 'success', 'error');
-    messageText.textContent = text;
-    messageBox.classList.add(type);
+    const box = document.getElementById('message-box-register');
+    const txt = document.getElementById('message-text-register');
+    box.classList.remove('hidden', 'success', 'error');
+    txt.textContent = text;
+    box.classList.add(type);
 }
 
 function clearMessage() {
-    const messageBoxLogin = document.getElementById('message-box-login');
-    const messageBoxRegister = document.getElementById('message-box-register');
-    if (messageBoxLogin) messageBoxLogin.classList.add('hidden');
-    if (messageBoxRegister) messageBoxRegister.classList.add('hidden');
+    document.getElementById('message-box-login').classList.add('hidden');
+    document.getElementById('message-box-register').classList.add('hidden');
 }
 
-function clearFlowResults(flowType) {
-    const flowSelector = '#' + flowType + '-flow';
-    const flow = document.getElementById(flowType + '-flow');
-    
-    // Clear result content
-    const resultElements = flow.querySelectorAll('[id*="result"], [id*="response"], [id*="display"]');
-    resultElements.forEach(el => {
-        el.textContent = '';
-        el.innerHTML = '';
-    });
-    
-    // Clear step visibility and styles
-    const steps = flow.querySelectorAll('.step');
-    steps.forEach(step => {
-        step.classList.remove('active', 'success', 'error', 'inactive', 'show');
-    });
-    
-    // Hide arrows
-    const arrows = flow.querySelectorAll('.arrow');
-    arrows.forEach(arrow => {
-        arrow.classList.remove('show');
-    });
+function clearFlowResults(flow) {
+    const el = document.getElementById(flow + '-flow');
+    if (!el) return;
+    el.querySelectorAll('[id*="result"], [id*="response"]').forEach(e => e.textContent = '');
+    el.querySelectorAll('.step').forEach(s => s.classList.remove('active', 'success', 'error', 'inactive', 'show'));
+    el.querySelectorAll('.arrow').forEach(a => a.classList.remove('show'));
 }
 
-function clearStepStyles(flowSelector) {
-    const steps = document.querySelectorAll(flowSelector + ' .step');
-    steps.forEach(step => {
-        step.classList.remove('active', 'success', 'error', 'inactive', 'show');
-    });
-    
-    // Also hide arrows
-    const arrows = document.querySelectorAll(flowSelector + ' .arrow');
-    arrows.forEach(arrow => {
-        arrow.classList.remove('show');
-    });
+function clearStepStyles(sel) {
+    document.querySelectorAll(sel + ' .step').forEach(s => s.classList.remove('active', 'success', 'error', 'inactive', 'show'));
+    document.querySelectorAll(sel + ' .arrow').forEach(a => a.classList.remove('show'));
 }
 
-// Demo credentials notification
-console.log('Demo Credentials:');
-console.log('Email: user@example.com');
-console.log('Password: password123');
-console.log('(or register a new account with any email ending in @demo)');
-
-// DASHBOARD PAGE HANDLERS
+// ===== DASHBOARD =====
 document.getElementById('logout-btn').addEventListener('click', () => {
-    // Destroy floating lines
     destroyFloatingLines();
-    
-    // Clear forms
     document.getElementById('login-email').value = '';
     document.getElementById('login-password').value = '';
     document.getElementById('register-name').value = '';
     document.getElementById('register-email').value = '';
     document.getElementById('register-password').value = '';
     document.getElementById('register-confirm').value = '';
-    
-    // Clear all flow results
     clearFlowResults('login');
     clearFlowResults('register');
-    
-    // Switch back to register page
+    localStorage.clear();
     showPage('register-page');
     clearMessage();
-    
-    // Initialize floating lines for register page
-    setTimeout(() => {
-        initFloatingLines('register-bg');
-    }, 100);
-    
-    showMessageRegister('✓ Logged out successfully', 'success');
-    setTimeout(() => {
-        document.getElementById('message-box-register').classList.add('hidden');
-    }, 2000);
+    showMessageRegister('✓ Logged out', 'success');
+    setTimeout(() => document.getElementById('message-box-register').classList.add('hidden'), 2000);
 });
 
-document.getElementById('messages-btn').addEventListener('click', () => {
-    showMessageRegister('📨 Messages feature coming soon!', 'success');
+document.getElementById('messages-btn').addEventListener('click', () => showMessageRegister('📨 Coming soon!', 'success'));
+document.getElementById('profile-btn').addEventListener('click', () => showMessageRegister('👤 Coming soon!', 'success'));
+document.getElementById('settings-btn').addEventListener('click', () => showMessageRegister('⚙️ Coming soon!', 'success'));
+
+// ===== INITIALIZATION =====
+
+// Early init on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('📄 DOMContentLoaded - Script initialized');
 });
 
-document.getElementById('profile-btn').addEventListener('click', () => {
-    showMessageRegister('👤 Profile feature coming soon!', 'success');
-});
-
-document.getElementById('settings-btn').addEventListener('click', () => {
-    showMessageRegister('⚙️ Settings feature coming soon!', 'success');
-});
-
-// Initialize floating lines for all pages on load
 window.addEventListener('load', () => {
+    console.log('📄 Page load event fired');
+    
+    // Check localStorage for existing session
+    const isLoggedIn = localStorage.getItem('loggedIn') === 'true';
+    const userName = localStorage.getItem('userName');
+    
+    console.log('📄 Checking session - loggedIn:', isLoggedIn, 'userName:', userName);
+    
+    if (isLoggedIn && userName) {
+        console.log('📄 ✅ Showing dashboard (session exists)');
+        showPage('dashboard-page');
+        document.getElementById('welcome-user').textContent = `Welcome back, ${userName}!`;
+    } else {
+        console.log('📄 Showing register page (no session)');
+        showPage('register-page');
+    }
+    
+    // Setup auto contrast
     setTimeout(() => {
-        initFloatingLines('register-bg');
-    }, 200);
+        updateAutoContrast();
+        setupAutoContrastObservers();
+    }, 300);
 });
-
-// Initialize floating lines when each page becomes active (will be called when needed)
-
-// ===== AUTO CONTRAST FOR TEXT BASED ON BACKGROUND =====
 function parseRGBString(rgb) {
     if (!rgb) return null;
-    // handle rgba(...) or rgb(...)
     const m = rgb.match(/rgba?\(([^)]+)\)/);
     if (!m) return null;
     const parts = m[1].split(',').map(p => p.trim());
-    const r = Number(parts[0]);
-    const g = Number(parts[1]);
-    const b = Number(parts[2]);
-    const a = parts[3] !== undefined ? Number(parts[3]) : 1;
-    return { r, g, b, a };
+    const r = Number(parts[0]), g = Number(parts[1]), b = Number(parts[2]), a = parts[3] !== undefined ? Number(parts[3]) : 1;
+    return {r, g, b, a};
 }
 
 function getEffectiveBackgroundColor(el) {
@@ -504,14 +335,11 @@ function getEffectiveBackgroundColor(el) {
         const style = getComputedStyle(node);
         const bg = style.backgroundColor;
         const parsed = parseRGBString(bg);
-        if (parsed && parsed.a > 0 && !(parsed.r === 0 && parsed.g === 0 && parsed.b === 0 && bg === 'transparent')) {
-            return parsed;
-        }
+        if (parsed && parsed.a > 0 && !(parsed.r === 0 && parsed.g === 0 && parsed.b === 0 && bg === 'transparent')) return parsed;
         node = node.parentElement;
     }
-    // fallback to body
     const bodyBg = parseRGBString(getComputedStyle(document.body).backgroundColor);
-    return bodyBg || { r: 245, g: 245, b: 245, a: 1 };
+    return bodyBg || {r: 245, g: 245, b: 245, a: 1};
 }
 
 function srgbChannelToLinear(c) {
@@ -528,50 +356,31 @@ function luminance(rgb) {
 
 function updateAutoContrast() {
     try {
-        const selectors = [
-            '.dashboard-content', '.left-side', '.page-content', '.step', '.menu-btn',
-            '.dashboard-header-left h2', '.dashboard-header p', '.subtitle', '.page-content h1',
-            '.flow-container', '.backend-wrapper h2', '.form-group label', '.message-box', '.step-title', '.step-text'
-        ];
-
-        selectors.forEach(sel => {
+        ['.dashboard-content', '.left-side', '.page-content', '.step', '.menu-btn', '.dashboard-header-left h2', '.dashboard-header p', '.subtitle', '.page-content h1', '.flow-container', '.backend-wrapper h2', '.form-group label', '.message-box', '.step-title', '.step-text'].forEach(sel => {
             document.querySelectorAll(sel).forEach(el => {
                 const bg = getEffectiveBackgroundColor(el);
                 const lum = luminance(bg);
-                // WCAG approximate threshold: 0.6 -> choose dark text; lower -> light text
-                const useDark = lum > 0.6;
-                el.style.color = useDark ? '#111' : '#ffffff';
+                el.style.color = lum > 0.6 ? '#111' : '#ffffff';
             });
         });
-    } catch (e) {
-        console.error('Auto contrast update failed', e);
-    }
+    } catch (e) {}
 }
 
-// Observe body and main background containers for changes
 function setupAutoContrastObservers() {
-    const observeTargets = ['body', '#register-bg', '#login-bg', '#dashboard-bg'];
     const observer = new MutationObserver(() => {
-        // debounce
         clearTimeout(window.__autoContrastTimer);
         window.__autoContrastTimer = setTimeout(updateAutoContrast, 120);
     });
-
-    observeTargets.forEach(sel => {
+    ['body', '#register-bg', '#login-bg', '#dashboard-bg'].forEach(sel => {
         const node = document.querySelector(sel);
-        if (node) {
-            observer.observe(node, { attributes: true, childList: true, subtree: true });
-        }
+        if (node) observer.observe(node, {attributes: true, childList: true, subtree: true});
     });
-
-    // also run on resize
     window.addEventListener('resize', () => {
         clearTimeout(window.__autoContrastTimer);
         window.__autoContrastTimer = setTimeout(updateAutoContrast, 120);
     });
 }
 
-// Run on load
 window.addEventListener('load', () => {
     setTimeout(() => {
         updateAutoContrast();
