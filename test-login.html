@@ -3,19 +3,33 @@
 <head>
     <title>Login Flow Diagnostic</title>
     <style>
-        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
-        .log { margin: 5px 0; padding: 5px; background: #0a0a0a; border-left: 3px solid #0f0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: monospace; background: #1a1a1a; color: #0f0; display: flex; height: 100vh; }
+        .panel { display: flex; flex-direction: column; }
+        #panel1 { width: 70%; padding: 20px; border-right: 1px solid #0f0; }
+        #panel2 { width: 30%; padding: 20px; overflow-y: auto; }
+        .log { margin: 5px 0; padding: 5px; background: #0a0a0a; border-left: 3px solid #0f0; font-size: 11px; }
         .error { border-left-color: #f00; color: #ff6666; }
         .success { border-left-color: #0f0; color: #66ff66; }
         .info { border-left-color: #0ff; color: #66ffff; }
-        button { padding: 10px 20px; margin: 10px 0; background: #0f0; color: #000; border: none; cursor: pointer; }
+        button { padding: 10px 20px; margin: 10px 0; background: #0f0; color: #000; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0f0; opacity: 0.8; }
+        h2 { margin-bottom: 20px; }
+        hr { border: none; border-top: 1px solid #0f0; margin: 10px 0; }
+        #output { flex: 1; overflow-y: auto; }
     </style>
 </head>
 <body>
-    <h2>BlockChat Login Diagnostic</h2>
-    <button onclick="runDiagnostic()">Run Login Test</button>
-    <hr>
-    <div id="output"></div>
+    <div id="panel1" class="panel">
+        <h2>BlockChat Login Diagnostic</h2>
+        <button onclick="runDiagnostic()">Run Login Test</button>
+        <hr>
+        <p style="font-size: 12px; color: #666;">Diagnostics Information</p>
+    </div>
+    <div id="panel2" class="panel">
+        <h2 style="font-size: 14px;">Output</h2>
+        <div id="output"></div>
+    </div>
 
     <script>
         const output = document.getElementById('output');
@@ -35,13 +49,13 @@
             try {
                 // Test 1: Check backend availability
                 log('1️⃣ Testing backend connectivity...', 'info');
-                const healthRes = await fetch('http://localhost:5000/api/health');
+                const healthRes = await fetch('http://localhost:3000/api/health');
                 if (!healthRes.ok) throw new Error(`Health check failed: ${healthRes.status}`);
                 log('✅ Backend is running', 'success');
 
                 // Test 2: Simulate login request
                 log('2️⃣ Sending login request...', 'info');
-                const loginRes = await fetch('http://localhost:5000/api/login', {
+                const loginRes = await fetch('http://localhost:3000/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: 'user@example.com', password: 'password123' })
@@ -58,12 +72,12 @@
 
                 // Test 3: Check if frontend can be reached
                 log('3️⃣ Testing frontend...', 'info');
-                const frontendRes = await fetch('http://localhost:8000/index.html');
+                const frontendRes = await fetch('http://localhost:3000/index.html');
                 log(`   Frontend Status: ${frontendRes.status}`, frontendRes.ok ? 'success' : 'error');
 
                 // Test 4: Analyze script.js
                 log('4️⃣ Fetching script.js for analysis...', 'info');
-                const scriptRes = await fetch('http://localhost:8000/script.js');
+                const scriptRes = await fetch('http://localhost:3000/script.js');
                 const scriptText = await scriptRes.text();
                 
                 const hasShowPage = scriptText.includes('function showPage');

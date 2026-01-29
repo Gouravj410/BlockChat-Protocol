@@ -10,8 +10,9 @@ html, body {
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f5f5f5;
-    color: #000000;
+    background: #0b1220;
+    color: #ffffff;
+    font-size: 17px;
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -61,12 +62,12 @@ body {
     z-index: 10;
     text-align: center;
     color: white;
-    backdrop-filter: blur(10px);
-    padding: 60px 80px;
-    border-radius: 20px;
-    background: rgba(20, 20, 40, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    padding: 32px 40px;
+    border-radius: 14px;
+    background: rgba(10, 14, 22, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
 }
 
 .dashboard-header h1 {
@@ -126,8 +127,8 @@ body {
 /* ===== LEFT SIDE - FRONTEND ===== */
 .left-side {
     flex: 0 0 65%;
-    min-width: 60%;
-    background: white;
+    min-width: 75%;
+    background: rgba(6,10,18,0.95);
     display: flex;
     flex-direction: column;
     align-items: stretch;
@@ -151,17 +152,19 @@ body {
 }
 
 .frontend-wrapper h1 {
-    font-size: 32px;
-    margin-bottom: 5px;
-    color: #2c3e50;
+    font-size: 40px;
+    margin-bottom: 6px;
+    color: #ffffff;
     text-align: center;
+    line-height: 1.05;
 }
 
 .subtitle {
     text-align: center;
-    color: #7f8c8d;
-    margin-bottom: 30px;
-    font-size: 14px;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 18px;
+    font-size: 15px;
+    letter-spacing: 0.2px;
 }
 
 /* PAGE CONTENT STYLING */
@@ -169,25 +172,27 @@ body {
     position: relative;
     z-index: 10;
     width: 100%;
-    max-width: 500px;
+    max-width: 420px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 20px;
+    gap: 12px;
 }
 
 .page-content h1 {
-    font-size: 32px;
-    color: #2c3e50;
+    font-size: 44px;
+    color: #ffffff;
     margin: 0;
     text-align: center;
+    font-weight: 700;
+    line-height: 1.04;
 }
 
 .page-content .subtitle {
-    font-size: 14px;
-    color: #7f8c8d;
-    margin: 0 0 20px 0;
+    font-size: 15px;
+    color: rgba(255,255,255,0.85);
+    margin: 0 0 12px 0;
     text-align: center;
 }
 
@@ -205,7 +210,7 @@ body {
 .form-container {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 12px;
 }
 
 .form-group {
@@ -215,28 +220,30 @@ body {
 
 .form-group label {
     font-weight: 600;
-    margin-bottom: 8px;
-    color: #2c3e50;
-    font-size: 14px;
+    margin-bottom: 6px;
+    color: #ffffff;
+    font-size: 15px;
 }
 
 .form-group input {
-    padding: 12px;
-    border: 2px solid #ecf0f1;
+    padding: 10px 12px;
+    border: 2px solid #21303f;
     border-radius: 6px;
-    font-size: 14px;
-    transition: all 0.3s ease;
+    font-size: 15px;
+    transition: all 0.2s ease;
     font-family: inherit;
+    color: #0b1220;
+    background: #ffffff;
 }
 
 .form-group input:focus {
     outline: none;
-    border-color: #3498db;
-    background: #f8fbff;
+    border-color: #4aa3ff;
+    background: #ffffff;
 }
 
 .form-group input:disabled {
-    background: #f5f5f5;
+    background: #e6e9ee;
     color: #95a5a6;
     cursor: not-allowed;
 }
@@ -297,14 +304,14 @@ body {
 }
 
 .form-links a {
-    color: #3498db;
+    color: #9ae6ff;
     text-decoration: none;
     font-size: 14px;
-    transition: color 0.3s ease;
+    transition: color 0.2s ease;
 }
 
 .form-links a:hover {
-    color: #2980b9;
+    color: #7bd0ff;
     text-decoration: underline;
 }
 
@@ -348,7 +355,7 @@ body {
 /* ===== LEFT SIDE - FRONTEND ===== */
 .left-side {
     flex: 0 0 50%;
-    min-width: 50%;
+    min-width: 75%;
     background: white;
     padding: 0;
     display: flex;
@@ -363,7 +370,7 @@ body {
 /* ===== RIGHT SIDE - BACKEND ===== */
 .right-side {
     flex: 1;
-    min-width: 50%;
+    min-width: 25%;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
     padding: 0;
     display: flex;

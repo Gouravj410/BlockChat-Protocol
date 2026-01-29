@@ -15,6 +15,17 @@ function showPage(pageId) {
         console.log('📍 Initializing floating lines for:', bgId);
         initFloatingLines(bgId);
     }, 100);
+    
+    // Switch backend flow based on page
+    document.querySelectorAll('.flow-diagram').forEach(flow => flow.classList.remove('active'));
+    
+    if (pageId === 'register-page') {
+        document.getElementById('register-flow').classList.add('active');
+    } else if (pageId === 'login-page') {
+        document.getElementById('login-flow').classList.add('active');
+    } else if (pageId === 'dashboard-page') {
+        document.getElementById('dashboard-flow').classList.add('active');
+    }
 }
 
 // Navigation

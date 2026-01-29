@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="container">
-        <!-- LEFT SIDE - FRONTEND SIMULATION -->
+        <!-- LEFT SIDE - FRONTEND SIMULATION (Register / Login / Dashboard) -->
         <div class="left-side">
             <div class="frontend-wrapper">
                 
@@ -73,7 +73,7 @@
                     </div>
                 </div>
 
-                <!-- DASHBOARD PAGE (HIDDEN BY DEFAULT) -->
+                <!-- DASHBOARD PAGE -->
                 <div id="dashboard-page" class="page">
                     <div id="dashboard-bg" class="floating-lines-container"></div>
                     <div class="page-content dashboard-content">
@@ -93,7 +93,7 @@
             </div>
         </div>
 
-        <!-- RIGHT SIDE - BACKEND VISUALIZER -->
+        <!-- RIGHT SIDE - BACKEND VISUALIZER (Always Visible) -->
         <div class="right-side">
             <div class="backend-wrapper">
                 <h2>Backend Flow</h2>
@@ -238,6 +238,54 @@
                             <div class="step-content">
                                 <div class="step-title">Response</div>
                                 <div class="step-text" id="reg-response">Sending response...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DASHBOARD FLOW -->
+                    <div id="dashboard-flow" class="flow-diagram">
+                        <div class="step" data-step="1">
+                            <div class="step-number">✓</div>
+                            <div class="step-content">
+                                <div class="step-title">Session Active</div>
+                                <div class="step-text">User authenticated</div>
+                                <div class="step-result"><span class="result-badge success">Authenticated</span></div>
+                            </div>
+                        </div>
+                        <div class="arrow"></div>
+
+                        <div class="step" data-step="2">
+                            <div class="step-number">📨</div>
+                            <div class="step-content">
+                                <div class="step-title">Messages Module</div>
+                                <div class="step-text">View and send messages</div>
+                            </div>
+                        </div>
+                        <div class="arrow"></div>
+
+                        <div class="step" data-step="3">
+                            <div class="step-number">👤</div>
+                            <div class="step-content">
+                                <div class="step-title">Profile Management</div>
+                                <div class="step-text">Edit user profile</div>
+                            </div>
+                        </div>
+                        <div class="arrow"></div>
+
+                        <div class="step" data-step="4">
+                            <div class="step-number">⚙️</div>
+                            <div class="step-content">
+                                <div class="step-title">Settings</div>
+                                <div class="step-text">Configure preferences</div>
+                            </div>
+                        </div>
+                        <div class="arrow"></div>
+
+                        <div class="step" data-step="5">
+                            <div class="step-number">🚪</div>
+                            <div class="step-content">
+                                <div class="step-title">Logout</div>
+                                <div class="step-text">End session securely</div>
                             </div>
                         </div>
                     </div>
