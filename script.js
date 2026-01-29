@@ -63,7 +63,7 @@ async function handleLogin() {
 
 async function animateLoginFlow(email, password) {
     try {
-        const response = await fetch('http://localhost:3000/api/login', {
+        const response = await fetch('http://localhost:5000/api/login', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -139,7 +139,7 @@ async function animateLoginFlow(email, password) {
 
     } catch (error) {
         console.error('Login error:', error);
-        showMessage('Connection error. Make sure backend is running on port 3000', 'error');
+        showMessage('Connection error. Make sure backend is running on port 5000', 'error');
         clearStepStyles('#login-flow');
     }
 }
@@ -191,7 +191,7 @@ async function handleRegister() {
 
 async function animateRegisterFlow(name, email, password) {
     try {
-        const response = await fetch('http://localhost:3000/api/register', {
+        const response = await fetch('http://localhost:5000/api/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -262,7 +262,7 @@ async function animateRegisterFlow(name, email, password) {
 
     } catch (error) {
         console.error('Register error:', error);
-        showMessage('Connection error. Make sure backend is running on port 3000', 'error');
+        showMessage('Connection error. Make sure backend is running on port 5000', 'error');
         clearStepStyles('#register-flow');
     }
 }

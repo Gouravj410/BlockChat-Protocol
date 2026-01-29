@@ -1,0 +1,257 @@
+Attached HTML and CSS Context
+
+<div class="left-side">
+            <div class="frontend-wrapper">
+                <h1>BlockChat</h1>
+                <p class="subtitle">Educational Backend Visualizer</p>
+
+                <!-- TAB NAVIGATION -->
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="login">Login</button>
+                    <button class="tab-button" data-tab="register">Register</button>
+                </div>
+
+                <!-- LOGIN FORM -->
+                <div id="login" class="tab-content active">
+                    <div class="form-container">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="login-email" placeholder="your@email.com" disabled-during-flow="">
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="login-password" placeholder="••••••••" disabled-during-flow="">
+                        </div>
+                        <button class="form-button" id="login-btn">Login</button>
+                        <div class="form-links">
+                            <a href="#forgot">Forgot password?</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REGISTER FORM -->
+                <div id="register" class="tab-content">
+                    <div class="form-container">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="register-name" placeholder="John Doe" disabled-during-flow="">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="register-email" placeholder="your@email.com" disabled-during-flow="">
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="register-password" placeholder="••••••••" disabled-during-flow="">
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm Password</label>
+                            <input type="password" id="register-confirm" placeholder="••••••••" disabled-during-flow="">
+                        </div>
+                        <button class="form-button" id="register-btn">Register</button>
+                    </div>
+                </div>
+
+                <!-- MESSAGE BOX -->
+                <div id="message-box" class="message-box error">
+                    <span id="message-text">✗ Invalid email or password</span>
+                </div>
+            </div>
+        </div>
+
+
+/* Matched Rule from user-agent */
+div {
+  display: block;
+}
+
+/* Matched Rule from user-agent */
+address, blockquote, center, div, figure, figcaption, footer, form, header, hr, legend, listing, main, p, plaintext, pre, summary, xmp, article, aside, h1, h2, h3, h4, h5, h6, hgroup, nav, section, search, table, caption, colgroup, col, thead, tbody, tfoot, tr, td, th, dir, dd, dl, dt, menu, ol, ul, li, bdi, output, [dir="ltr" i], [dir="rtl" i], [dir="auto" i] {
+  unicode-bidi: isolate;
+}
+
+/* Matched Rule from regular */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  margin-top: 0px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  padding-top: 0px;
+  padding-right: 0px;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  box-sizing: border-box;
+}
+
+/* Matched Rule from regular */
+.left-side {
+  flex: 1;
+  min-width: 40%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 20px;
+  border-right: 2px solid #e0e0e0;
+  overflow-y: auto;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0%;
+  min-width: 40%;
+  background-image: initial;
+  background-position-x: initial;
+  background-position-y: initial;
+  background-size: initial;
+  background-repeat: initial;
+  background-attachment: initial;
+  background-origin: initial;
+  background-clip: initial;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 30px;
+  padding-right: 20px;
+  padding-bottom: 30px;
+  padding-left: 20px;
+  border-right-width: 2px;
+  border-right-style: solid;
+  border-right-color: rgb(224, 224, 224);
+  overflow-y: auto;
+}
+
+/* Matched Rule from regular */
+.left-side, .right-side {
+  flex: auto;
+  border-right: none;
+  border-bottom: 2px solid #e0e0e0;
+  min-height: 50vh;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: auto;
+  border-right-width: initial;
+  border-right-style: none;
+  border-right-color: initial;
+  border-bottom-width: 2px;
+  border-bottom-style: solid;
+  border-bottom-color: rgb(224, 224, 224);
+  min-height: 50vh;
+}
+
+/* Inherited from ancestor level 1 (user-agent) */
+div {
+  display: block;
+}
+
+/* Inherited from ancestor level 1 (user-agent) */
+address, blockquote, center, div, figure, figcaption, footer, form, header, hr, legend, listing, main, p, plaintext, pre, summary, xmp, article, aside, h1, h2, h3, h4, h5, h6, hgroup, nav, section, search, table, caption, colgroup, col, thead, tbody, tfoot, tr, td, th, dir, dd, dl, dt, menu, ol, ul, li, bdi, output, [dir="ltr" i], [dir="rtl" i], [dir="auto" i] {
+  unicode-bidi: isolate;
+}
+
+/* Inherited from ancestor level 1 (regular) */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  margin-top: 0px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  padding-top: 0px;
+  padding-right: 0px;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  box-sizing: border-box;
+}
+
+/* Inherited from ancestor level 1 (regular) */
+.container {
+  display: flex;
+  height: 100vh;
+  gap: 0;
+  overflow: hidden;
+  display: flex;
+  height: 100vh;
+  row-gap: 0px;
+  column-gap: 0px;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+/* Inherited from ancestor level 1 (regular) */
+.container {
+  flex-direction: column;
+  flex-direction: column;
+}
+
+/* Inherited from ancestor level 2 (user-agent) */
+body {
+  display: block;
+  margin-top: 8px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  margin-left: 8px;
+}
+
+/* Inherited from ancestor level 2 (regular) */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  margin-top: 0px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  padding-top: 0px;
+  padding-right: 0px;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  box-sizing: border-box;
+}
+
+/* Inherited from ancestor level 2 (regular) */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f5f5;
+  color: #333;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-image: initial;
+  background-position-x: initial;
+  background-position-y: initial;
+  background-size: initial;
+  background-repeat: initial;
+  background-attachment: initial;
+  background-origin: initial;
+  background-clip: initial;
+  background-color: rgb(245, 245, 245);
+  color: rgb(51, 51, 51);
+}
+
+/* Inherited from ancestor level 3 (user-agent) */
+html {
+  display: block;
+}
+
+/* Inherited from ancestor level 3 (user-agent) */
+:root {
+  view-transition-name: root;
+}
+
+/* Inherited from ancestor level 3 (regular) */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  margin-top: 0px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  padding-top: 0px;
+  padding-right: 0px;
+  padding-bottom: 0px;
+  padding-left: 0px;
+  box-sizing: border-box;
+}

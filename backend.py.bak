@@ -1,0 +1,476 @@
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+import sqlite3
+import hashlib
+import secrets
+import os
+from datetime import datetime
+
+app = Flask(__name__)
+CORS(app)
+
+# Database setup
+DB_PATH = 'blockchat.db'
+
+def get_db():
+    """Get database connection"""
+    db = sqlite3.connect(DB_PATH)
+    db.row_factory = sqlite3.Row
+    return db
+
+def hash_password(password):
+    """Hash a password using SHA256"""
+    return hashlib.sha256(password.encode()).hexdigest()
+
+def generate_token():
+    """Generate a JWT-like token"""
+    return 'jwt_' + secrets.token_hex(32)
+
+def init_db():
+    """Initialize the database"""
+    db = get_db()
+    cursor = db.cursor()
+    
+    # Create users table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    # Create sessions table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS sessions (
+            id TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+    ''')
+    
+    db.commit()
+    
+    # Insert demo user if not exists
+    cursor.execute('SELECT email FROM users WHERE email = ?', ('user@example.com',))
+    if not cursor.fetchone():
+        demo_hash = hash_password('password123')
+        cursor.execute(
+            'INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)',
+            ('Demo User', 'user@example.com', demo_hash)
+        )
+        db.commit()
+        print('✓ Demo user created')
+    
+    db.close()
+
+import time
+
+async def delay(ms):
+    """Simulate delay"""
+    time.sleep(ms / 1000)
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    """Login endpoint"""
+    data = request.json
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '').strip()
+    
+    flow_steps = []
+    
+    try:
+        # Step 1: HTTP Request Received
+        flow_steps.append({
+            'step': 1,
+            'title': 'HTTP Request',
+            'text': 'POST /login request sent',
+            'status': 'active',
+            'timestamp': datetime.now().isoformat()
+        })
+        time.sleep(0.8)
+        
+        # Step 2: API Endpoint
+        flow_steps.append({
+            'step': 2,
+            'title': 'API Endpoint',
+            'text': 'Server receives request',
+            'status': 'active',
+            'data': {
+                'email': email,
+                'password': '••••••••'
+            },
+            'timestamp': datetime.now().isoformat()
+        })
+        time.sleep(0.8)
+        
+        # Step 3: Server Logic - Validate Input
+        if not email or not password:
+            flow_steps.append({
+                'step': 3,
+                'title': 'Server Logic',
+                'text': 'Validating input data',
+                'status': 'error',
+                'result': '✗ Missing fields',
+                'timestamp': datetime.now().isoformat()
+            })
+            
+            for i in range(4, 8):
+                flow_steps.append({
+                    'step': i,
+                    'status': 'inactive'
+                })
+            
+            return jsonify({
+                'success': False,
+                'message': 'Email and password required',
+                'flowSteps': flow_steps
+            }), 400
+        
+        flow_steps.append({
+            'step': 3,
+            'title': 'Server Logic',
+            'text': 'Validating input data',
+            'status': 'success',
+            'result': '✓ Input valid',
+            'timestamp': datetime.now().isoformat()
+        })
+        time.sleep(0.8)
+        
+        # Step 4: Database Query
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute('SELECT * FROM users WHERE LOWER(email) = ?', (email,))
+        user = cursor.fetchone()
+        db.close()
+        
+        if not user:
+            flow_steps.append({
+                'step': 4,
+                'title': 'Database Query',
+                'text': 'Searching user in database',
+                'status': 'error',
+                'result': '✗ User not found',
+                'timestamp': datetime.now().isoformat()
+            })
+            time.sleep(0.8)
+            
+            for i in range(5, 8):
+                flow_steps.append({
+                    'step': i,
+                    'status': 'inactive'
+                })
+            
+            return jsonify({
+                'success': False,
+                'message': 'Invalid email or password',
+                'flowSteps': flow_steps
+            }), 401
+        
+        flow_steps.append({
+            'step': 4,
+            'title': 'Database Query',
+            'text': 'Searching user in database',
+            'status': 'success',
+            'result': '✓ User found',
+            'timestamp': datetime.now().isoformat()
+        })
+        time.sleep(0.8)
+        
+        # Step 5: Authentication - Compare passwords
+        password_hash = hash_password(password)
+        password_match = password_hash == user['password_hash']
+        
+        if not password_match:
+            flow_steps.append({
+                'step': 5,
+                'title': 'Authentication',
+                'text': 'Comparing password hashes',
+                'status': 'error',
+                'result': '✗ Wrong password',
+                'timestamp': datetime.now().isoformat()
+            })
+            time.sleep(0.8)
+            
+            for i in range(6, 8):
+                flow_steps.append({
+                    'step': i,
+                    'status': 'inactive'
+                })
+            
+            return jsonify({
+                'success': False,
+                'message': 'Invalid email or password',
+                'flowSteps': flow_steps
+            }), 401
+        
+        flow_steps.append({
+            'step': 5,
+            'title': 'Authentication',
+            'text': 'Comparing password hashes',
+            'status': 'success',
+            'result': '✓ Password matches',
+            'timestamp': datetime.now().isoformat()
+        })
+        time.sleep(0.8)
+        
+        # Step 6: Session/Token Creation
+        token = generate_token()
+        session_id = 'session_' + secrets.token_hex(16)
+        
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            'INSERT INTO sessions (id, user_id) VALUES (?, ?)',
+            (session_id, user['id'])
+        )
+        db.commit()
+        db.close()
+        
+        flow_steps.append({
+            'step': 6,
+            'title': 'Session/Token',
+            'text': 'Creating user session',
+            'status': 'success',
+            'result': '✓ JWT created',
+            'timestamp': datetime.now().isoformat()
+        })
+        time.sleep(0.8)
+        
+        # Step 7: Response
+        flow_steps.append({
+            'step': 7,
+            'title': 'Response',
+            'text': '200 OK - Login successful',
+            'status': 'success',
+            'timestamp': datetime.now().isoformat()
+        })
+        
+        return jsonify({
+            'success': True,
+            'message': 'Login successful',
+            'user': {
+                'id': user['id'],
+                'name': user['name'],
+                'email': user['email']
+            },
+            'token': token,
+            'sessionId': session_id,
+            'flowSteps': flow_steps
+        }), 200
+        
+    except Exception as e:
+        print(f'Login error: {e}')
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'message': f'Server error: {str(e)}',
+            'flowSteps': flow_steps
+        }), 500
+
+
+@app.route('/api/register', methods=['POST'])
+def register():
+    """Register endpoint"""
+    data = request.json
+    name = data.get('name', '').strip()
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '').strip()
+    confirm = data.get('confirm', '').strip()
+    
+    flow_steps = []
+    
+    try:
+        # Step 1: HTTP Request
+        flow_steps.append({
+            'step': 1,
+            'title': 'HTTP Request',
+            'text': 'POST /register request sent',
+            'status': 'active',
+            'timestamp': datetime.now().isoformat()
+        })
+        time.sleep(0.8)
+        
+        # Step 2: Validate Input
+        validation_errors = []
+        if not name or not email or not password or not confirm:
+            validation_errors.append('All fields required')
+        if password != confirm:
+            validation_errors.append('Passwords do not match')
+        if password and len(password) < 6:
+            validation_errors.append('Password too short')
+        if '@' not in email:
+            validation_errors.append('Invalid email format')
+        
+        if validation_errors:
+            flow_steps.append({
+                'step': 2,
+                'title': 'Validate Input',
+                'text': 'Checking all fields',
+                'status': 'error',
+                'result': f'✗ {validation_errors[0]}',
+                'timestamp': datetime.now().isoformat()
+            })
+            time.sleep(0.8)
+            
+            for i in range(3, 8):
+                flow_steps.append({
+                    'step': i,
+                    'status': 'inactive'
+                })
+            
+            return jsonify({
+                'success': False,
+                'message': validation_errors[0],
+                'flowSteps': flow_steps
+            }), 400
+        
+        flow_steps.append({
+            'step': 2,
+            'title': 'Validate Input',
+            'text': 'Checking all fields',
+            'status': 'success',
+            'result': '✓ All fields valid',
+            'timestamp': datetime.now().isoformat()
+        })
+        time.sleep(0.8)
+        
+        # Step 3: Check if user exists
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute('SELECT email FROM users WHERE LOWER(email) = ?', (email,))
+        existing_user = cursor.fetchone()
+        db.close()
+        
+        if existing_user:
+            flow_steps.append({
+                'step': 3,
+                'title': 'Check User Exists',
+                'text': 'Email already in database?',
+                'status': 'error',
+                'result': '✗ Email already registered',
+                'timestamp': datetime.now().isoformat()
+            })
+            time.sleep(0.8)
+            
+            for i in range(4, 8):
+                flow_steps.append({
+                    'step': i,
+                    'status': 'inactive'
+                })
+            
+            return jsonify({
+                'success': False,
+                'message': 'Email already registered',
+                'flowSteps': flow_steps
+            }), 409
+        
+        flow_steps.append({
+            'step': 3,
+            'title': 'Check User Exists',
+            'text': 'Email already in database?',
+            'status': 'success',
+            'result': '✓ Email available',
+            'timestamp': datetime.now().isoformat()
+        })
+        time.sleep(0.8)
+        
+        # Step 4: Hash Password
+        password_hash = hash_password(password)
+        flow_steps.append({
+            'step': 4,
+            'title': 'Hash Password',
+            'text': 'Encrypting password',
+            'status': 'success',
+            'result': '✓ Password hashed',
+            'timestamp': datetime.now().isoformat()
+        })
+        time.sleep(0.8)
+        
+        # Step 5: Insert into Database
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute(
+            'INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)',
+            (name, email, password_hash)
+        )
+        db.commit()
+        user_id = cursor.lastrowid
+        db.close()
+        
+        flow_steps.append({
+            'step': 5,
+            'title': 'Insert Database',
+            'text': 'Creating user record',
+            'status': 'success',
+            'result': '✓ User created',
+            'timestamp': datetime.now().isoformat()
+        })
+        time.sleep(0.8)
+        
+        # Step 6: Send Confirmation
+        flow_steps.append({
+            'step': 6,
+            'title': 'Send Confirmation',
+            'text': 'Email verification link',
+            'status': 'success',
+            'result': '✓ Email sent',
+            'timestamp': datetime.now().isoformat()
+        })
+        time.sleep(0.8)
+        
+        # Step 7: Response
+        flow_steps.append({
+            'step': 7,
+            'title': 'Response',
+            'text': '201 Created - Registration successful',
+            'status': 'success',
+            'timestamp': datetime.now().isoformat()
+        })
+        
+        return jsonify({
+            'success': True,
+            'message': 'Account created successfully',
+            'user': {
+                'id': user_id,
+                'name': name,
+                'email': email
+            },
+            'flowSteps': flow_steps
+        }), 201
+        
+    except Exception as e:
+        print(f'Register error: {e}')
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'success': False,
+            'message': f'Server error: {str(e)}',
+            'flowSteps': flow_steps
+        }), 500
+
+
+if __name__ == '__main__':
+    print('\n╔════════════════════════════════════╗')
+    print('║    BLOCKCHAT PROTOCOL - BACKEND     ║')
+    print('╚════════════════════════════════════╝\n')
+    
+    # Initialize database
+    init_db()
+    print(f'✓ Database: {DB_PATH}')
+    
+    print('\nDEMO CREDENTIALS:')
+    print('  Email: user@example.com')
+    print('  Password: password123\n')
+    
+    print('Endpoints:')
+    print('  POST /api/login')
+    print('  POST /api/register\n')
+    
+    # Start Flask server
+    print('✓ Server running on http://localhost:5000\n')
+    app.run(debug=False, host='localhost', port=5000)
