@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BlockChat Protocol - Backend Visualization</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
     <div class="container">
         <!-- LEFT SIDE - FRONTEND SIMULATION -->
         <div class="left-side">
             <div class="frontend-wrapper">
+                                <!-- LOGIN/REGISTER SECTION -->
+                                <div id="form-section">
                 <h1>BlockChat</h1>
                 <p class="subtitle">Educational Backend Visualizer</p>
 
@@ -64,6 +67,22 @@
                 <!-- MESSAGE BOX -->
                 <div id="message-box" class="message-box hidden">
                     <span id="message-text"></span>
+                                </div>
+
+                                <!-- DASHBOARD SECTION (HIDDEN BY DEFAULT) -->
+                                <div id="dashboard-section" class="dashboard-section hidden">
+                                    <div id="dashboard-bg" class="floating-lines-container"></div>
+                                    <div class="dashboard-header-left">
+                                        <h2>Welcome to BlockChat</h2>
+                                        <p id="welcome-user">Welcome, User!</p>
+                                    </div>
+                                    <div class="dashboard-menu">
+                                        <button class="menu-btn" id="messages-btn">📨 Messages</button>
+                                        <button class="menu-btn" id="profile-btn">👤 Profile</button>
+                                        <button class="menu-btn" id="settings-btn">⚙️ Settings</button>
+                                        <button class="menu-btn logout" id="logout-btn">🚪 Logout</button>
+                                    </div>
+                                </div>
                 </div>
             </div>
         </div>
@@ -222,5 +241,6 @@
     </div>
 
     <script src="script.js"></script>
+    <script src="floating-lines.js"></script>
 </body>
 </html>

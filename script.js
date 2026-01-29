@@ -76,8 +76,20 @@ async function animateLoginFlow(email, password) {
 
         // Display each step from the server
         for (const flowStep of flowSteps) {
+            const stepIndex = flowStep.step - 1;
             const stepElement = document.querySelector(`#login-flow [data-step="${flowStep.step}"]`);
             if (!stepElement) continue;
+
+            // Show step with animation
+            stepElement.classList.add('show');
+            
+            // Show arrow before this step (if not the first step)
+            if (flowStep.step > 1) {
+                const previousArrow = stepElement.previousElementSibling;
+                if (previousArrow && previousArrow.classList.contains('arrow')) {
+                    previousArrow.classList.add('show');
+                }
+            }
 
             // Reset classes
             stepElement.classList.remove('success', 'error', 'inactive', 'active');
@@ -124,18 +136,41 @@ async function animateLoginFlow(email, password) {
                 responseText.textContent = flowStep.text;
             }
 
-            // Wait before moving to next step
-            await sleep(300);
+            // Wait before moving to next step (2 seconds for visibility)
+            await sleep(2000);
+            
+            // If this step is an error, stop showing remaining steps
+            if (flowStep.status === 'error') {
+                break;
+            }
         }
 
         if (data.success) {
             showMessage('✓ Login successful! Welcome back.', 'success');
+
+            // Get user name from the response
+            const userName = data.user?.name || 'User';
+
+            // Switch left panel to dashboard after a delay
+            setTimeout(() => {
+                // hide form and show dashboard section inside left panel
+                const formSection = document.getElementById('form-section');
+                const dashboardSection = document.getElementById('dashboard-section');
+                if (formSection && dashboardSection) {
+                    formSection.classList.add('hidden');
+                    dashboardSection.classList.remove('hidden');
+                }
+
+                document.getElementById('welcome-user').textContent = `Welcome back, ${userName}!`;
+
+                // Initialize floating lines animation inside dashboard bg
+                initFloatingLines('dashboard-bg');
+            }, 2000);
         } else {
             showMessage('✗ ' + data.message, 'error');
         }
 
-        await sleep(1000);
-        clearStepStyles('#login-flow');
+        // Steps remain visible - do not clear
 
     } catch (error) {
         console.error('Login error:', error);
@@ -204,8 +239,20 @@ async function animateRegisterFlow(name, email, password) {
 
         // Display each step from the server
         for (const flowStep of flowSteps) {
+            const stepIndex = flowStep.step - 1;
             const stepElement = document.querySelector(`#register-flow [data-step="${flowStep.step}"]`);
             if (!stepElement) continue;
+
+            // Show step with animation
+            stepElement.classList.add('show');
+            
+            // Show arrow before this step (if not the first step)
+            if (flowStep.step > 1) {
+                const previousArrow = stepElement.previousElementSibling;
+                if (previousArrow && previousArrow.classList.contains('arrow')) {
+                    previousArrow.classList.add('show');
+                }
+            }
 
             // Reset classes
             stepElement.classList.remove('success', 'error', 'inactive', 'active');
@@ -247,18 +294,39 @@ async function animateRegisterFlow(name, email, password) {
                 responseText.textContent = flowStep.text;
             }
 
-            // Wait before moving to next step
-            await sleep(300);
+            // Wait before moving to next step (2 seconds for visibility)
+            await sleep(2000);
+            
+            // If this step is an error, stop showing remaining steps
+            if (flowStep.status === 'error') {
+                break;
+            }
         }
 
         if (data.success) {
             showMessage('✓ Account created! Please check your email to verify.', 'success');
+            
+            // Get user name from the response
+            const userName = data.user?.name || 'User';
+            
+            // Switch left panel to dashboard after a delay
+            setTimeout(() => {
+                const formSection = document.getElementById('form-section');
+                const dashboardSection = document.getElementById('dashboard-section');
+                if (formSection && dashboardSection) {
+                    formSection.classList.add('hidden');
+                    dashboardSection.classList.remove('hidden');
+                }
+                document.getElementById('welcome-user').textContent = `Welcome, ${userName}!`;
+
+                // Initialize floating lines animation inside dashboard bg
+                initFloatingLines('dashboard-bg');
+            }, 2000);
         } else {
             showMessage('✗ ' + data.message, 'error');
         }
 
-        await sleep(1000);
-        clearStepStyles('#register-flow');
+        // Steps remain visible - do not clear
 
     } catch (error) {
         console.error('Register error:', error);
@@ -315,18 +383,39 @@ function clearMessage() {
 }
 
 function clearFlowResults(flowType) {
+    const flowSelector = '#' + flowType + '-flow';
     const flow = document.getElementById(flowType + '-flow');
+    
+    // Clear result content
     const resultElements = flow.querySelectorAll('[id*="result"], [id*="response"], [id*="display"]');
     resultElements.forEach(el => {
         el.textContent = '';
         el.innerHTML = '';
+    });
+    
+    // Clear step visibility and styles
+    const steps = flow.querySelectorAll('.step');
+    steps.forEach(step => {
+        step.classList.remove('active', 'success', 'error', 'inactive', 'show');
+    });
+    
+    // Hide arrows
+    const arrows = flow.querySelectorAll('.arrow');
+    arrows.forEach(arrow => {
+        arrow.classList.remove('show');
     });
 }
 
 function clearStepStyles(flowSelector) {
     const steps = document.querySelectorAll(flowSelector + ' .step');
     steps.forEach(step => {
-        step.classList.remove('active', 'success', 'error', 'inactive');
+        step.classList.remove('active', 'success', 'error', 'inactive', 'show');
+    });
+    
+    // Also hide arrows
+    const arrows = document.querySelectorAll(flowSelector + ' .arrow');
+    arrows.forEach(arrow => {
+        arrow.classList.remove('show');
     });
 }
 
@@ -335,3 +424,48 @@ console.log('Demo Credentials:');
 console.log('Email: user@example.com');
 console.log('Password: password123');
 console.log('(or register a new account with any email ending in @demo)');
+
+// DASHBOARD PAGE HANDLERS
+document.getElementById('logout-btn').addEventListener('click', () => {
+    // Destroy floating lines
+    destroyFloatingLines();
+    
+    // Clear forms
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-password').value = '';
+    document.getElementById('register-name').value = '';
+    document.getElementById('register-email').value = '';
+    document.getElementById('register-password').value = '';
+    document.getElementById('register-confirm').value = '';
+    
+    // Switch back to login page
+    const formSection = document.getElementById('form-section');
+    const dashboardSection = document.getElementById('dashboard-section');
+    if (formSection && dashboardSection) {
+        dashboardSection.classList.add('hidden');
+        formSection.classList.remove('hidden');
+    }
+    
+    // Reset to login tab
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('[data-tab="login"]').classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    document.getElementById('login').classList.add('active');
+    document.querySelectorAll('.flow-diagram').forEach(flow => flow.classList.remove('active'));
+    document.getElementById('login-flow').classList.add('active');
+    
+    showMessage('✓ Logged out successfully', 'success');
+    setTimeout(() => clearMessage(), 2000);
+});
+
+document.getElementById('messages-btn').addEventListener('click', () => {
+    showMessage('📨 Messages feature coming soon!', 'success');
+});
+
+document.getElementById('profile-btn').addEventListener('click', () => {
+    showMessage('👤 Profile feature coming soon!', 'success');
+});
+
+document.getElementById('settings-btn').addEventListener('click', () => {
+    showMessage('⚙️ Settings feature coming soon!', 'success');
+});
