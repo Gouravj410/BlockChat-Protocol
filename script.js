@@ -33,7 +33,7 @@ document.getElementById('to-login-from-register').addEventListener('click', (e) 
 document.getElementById('to-register-from-login').addEventListener('click', (e) => { e.preventDefault(); showPage('register-page'); });
 
 // ===== LOGIN =====
-document.getElementById('login-btn').addEventListener('click', handleLogin);
+document.getElementById('login-btn').addEventListener('click', (e) => { e.preventDefault(); handleLogin(); });
 
 async function handleLogin() {
     console.log('🔐 [LOGIN] handleLogin() called');
@@ -62,8 +62,8 @@ async function handleLogin() {
     console.log('🔐 [LOGIN] UI ready');
 
     try {
-        console.log('🔐 [LOGIN] Sending request to http://localhost:3000/api/login...');
-        const resp = await fetch('http://localhost:3000/api/login', {
+        console.log('🔐 [LOGIN] Sending request to http://localhost:5000/api/login...');
+        const resp = await fetch('http://localhost:5000/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -142,7 +142,7 @@ async function handleLogin() {
 }
 
 // ===== REGISTER =====
-document.getElementById('register-btn').addEventListener('click', handleRegister);
+document.getElementById('register-btn').addEventListener('click', (e) => { e.preventDefault(); handleRegister(); });
 
 async function handleRegister() {
     const name = document.getElementById('register-name').value.trim();
@@ -174,7 +174,7 @@ async function handleRegister() {
     document.getElementById('login-flow').classList.remove('active');
 
     try {
-        const resp = await fetch('http://localhost:3000/api/register', {
+        const resp = await fetch('http://localhost:5000/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, email, password, confirm: password })
@@ -419,9 +419,4 @@ function setupAutoContrastObservers() {
     });
 }
 
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        updateAutoContrast();
-        setupAutoContrastObservers();
-    }, 300);
-});
+// Consolidated load handling already set above; ensure auto-contrast runs once on load
